@@ -2,15 +2,17 @@ require 'httparty'
 require 'nokogiri'
 require 'sendgrid-ruby'
 
-
 class Scraper
-  include SendGrid
-
   def call
     site = HTTParty.get("https://www.uvic.ca/BAN1P/bwckschd.p_disp_detail_sched?term_in=201909&crn_in=12859")
-    @parsed_page = Nokogiri::HTML(site)
+    
+    puts site.code
 
-    available_seats = @parsed_page.css("table .datadisplaytable").css('.dddefault').children.map { |seats| seats.text }.compact[2].to_i
+    available_seats = Nokogiri::HTML(site).css("table .datadisplaytable").css('.dddefault').children.map { |seats| seats.text }.compact[2].to_i
+
+    if available_seats != 0
+      puts 'something is wrong, or a seat is open'
+    end
 
     if available_seats > 0
       send_email
